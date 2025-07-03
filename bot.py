@@ -7,13 +7,18 @@ from aiogram.enums.parse_mode import ParseMode
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from dotenv import load_dotenv
 from content_generator import generate_post
+from aiogram.client.default import DefaultBotProperties
 
 load_dotenv()
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
 
-bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
+bot = Bot(
+    token=API_TOKEN,
+    default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+)
+
 scheduler = AsyncIOScheduler()
 
 # Времена публикации и темы
@@ -26,9 +31,9 @@ content_plan = {
 
 async def send_post(topic: str):
     try:
-        post_text = generate_post(topic)
+        post_text = await generate_post(topic)  # <-- await обязательно!
         await bot.send_message(chat_id=CHANNEL_ID, text=post_text)
-        print(f"[{datetime.now()}] Sent post on topic '{topic}': {post_text[:40]}...")
+        print(f"[{datetime.now()}] Sent post: {post_text[:40]}...")
     except Exception as e:
         print(f"❌ Error sending post: {e}")
 
