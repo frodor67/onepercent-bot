@@ -1,20 +1,20 @@
-импорт асинсио
-импорт ос
-из датавремя импорт датавремя
+import asyncio
+import os
+from datetime import datetime
 
-из айограмма импорт Бот
-из aiogram.enums.parse_mode импорт ParseMode
-из apscheduler.schedulers.asyncio импорт AsyncIOScheduler
-из дотенв импорт load_dotenv
-из генератор_контента импорт сгенерировать_пост
+from aiogram import Bot
+from aiogram.enums.parse_mode import ParseMode
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from dotenv import load_dotenv
+from content_generator import generate_post
 
 load_dotenv()
 
-API_TOKEN = ос.гетенв("БОТ_ТОКЕН")
-CHANNEL_ID = os.гетенв("ИДЕНТИФИКАТОР_КАНАЛА")
+API_TOKEN = os.getenv("BOT_TOKEN")
+CHANNEL_ID = os.getenv("CHANNEL_ID")
 
-бот = Бот(token=API_TOKEN, parse_mode=ParseMode.HTML)
-планировщик = AsyncIOScheduler()
+bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
+scheduler = AsyncIOScheduler()
 
 # Времена публикации и темы
 content_plan = {
@@ -24,25 +24,25 @@ content_plan = {
     "21:59": "вечерняя рефлексия"
 }
 
-асинхронизация деф отправить_пост(тема: стр):
-    попробовать:
- пост_текст = сгенерировать_пост(тема)
-        ждать бот.отправить_сообщение(chat_id=CHANNEL_ID, текст=post_text)
-        печать(ф"[{дата-время.сейчас()}] Отправлено сообщение: {пост_текст[:40]}. ...")
-    кроме Исключение как е:
-        печать(f"Ошибка отправки сообщения: {e}")
+async def send_post(topic: str):
+    try:
+        post_text = generate_post(topic)
+        await bot.send_message(chat_id=CHANNEL_ID, text=post_text)
+        print(f"[{datetime.now()}] Sent post: {post_text[:40]}...")
+    except Exception as e:
+        print(f"Error sending post: {e}")
 
-асинхронизация деф планировщик_старт():
-    для time_str, тема в план_контента.предметы():
- час, минута = карта(int, time_str.сплит(":"))
- планировщик.добавить_задание(отправить_пост, "хрон", час=час, минута=минута, аргументы=[тема])
- планировщик.начинать()
+async def scheduler_start():
+    for time_str, topic in content_plan.items():
+        hour, minute = map(int, time_str.split(":"))
+        scheduler.add_job(send_post, "cron", hour=hour, minute=minute, args=[topic])
+    scheduler.start()
 
-асинхронизация деф основной():
-    ждать планировщик_старт()
-    печать(«Бот бежит...»)
-    пока Правда:
-        ждать асинсио.спать(3600)
+async def main():
+    await scheduler_start()
+    print("Bot is running...")
+    while True:
+        await asyncio.sleep(3600)
 
-если __имя__ == "__главный__":
- асинсио.бегать(основной())
+if __name__ == "__main__":
+    asyncio.run(main())
