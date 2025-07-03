@@ -26,11 +26,11 @@ content_plan = {
 
 async def send_post(topic: str):
     try:
-        post_text = async generate_post(topic)
+        post_text = generate_post(topic)
         await bot.send_message(chat_id=CHANNEL_ID, text=post_text)
-        print(f"[{datetime.now()}] Sent post: {post_text[:40]}...")
+        print(f"[{datetime.now()}] Sent post on topic '{topic}': {post_text[:40]}...")
     except Exception as e:
-        print(f"Error sending post: {e}")
+        print(f"❌ Error sending post: {e}")
 
 async def scheduler_start():
     for time_str, topic in content_plan.items():
@@ -40,7 +40,12 @@ async def scheduler_start():
 
 async def main():
     await scheduler_start()
-    print("Bot is running...")
+
+    # ⏱ Моментальная отправка всех тем (или выбери нужные)
+    print("🔔 Sending initial posts on startup...")
+    await send_post("факт дня")
+
+    print("✅ Bot is running and scheduler is active.")
     while True:
         await asyncio.sleep(3600)
 
