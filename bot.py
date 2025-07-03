@@ -26,7 +26,7 @@ content_plan = {
 
 async def send_post(topic: str):
     try:
-        post_text = generate_post(topic)
+        post_text = async generate_post(topic)
         await bot.send_message(chat_id=CHANNEL_ID, text=post_text)
         print(f"[{datetime.now()}] Sent post: {post_text[:40]}...")
     except Exception as e:
